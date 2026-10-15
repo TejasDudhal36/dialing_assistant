@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Dialing Assistant Lite</string>
+    <string name="merge_accessibility_description">Lets the operator route an active call: when a second call is dialed from the web app, this taps \"Merge\" once it connects so the two calls are joined into a conference. Only acts during a routing request.</string>
+</resources>

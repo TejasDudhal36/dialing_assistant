@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "546448852404",
+    "project_id": "dialing-assistant",
+    "storage_bucket": "dialing-assistant.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546448852404:android:eefbff353b48fc40d19ee1",
+        "android_client_info": {
+          "package_name": "com.dialingassistant.agent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPSfGodjFPb-eakmp-mShY2PuAR-khVdw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

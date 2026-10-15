@@ -1,0 +1,89 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ────────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isAgent(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAgentOrAdmin(uid) {
+      return isAgent(uid) || isAdmin();
+    }
+
+    // ── User profiles ───────────────────────────────────────────────────────
+
+    // Admins can read/write all user docs.
+    // Agents can read their own doc (to check disabled status).
+    match /users/{uid} {
+      allow read: if isAgentOrAdmin(uid);
+      allow write: if isAdmin();
+    }
+
+    // ── Per-agent data ──────────────────────────────────────────────────────
+
+    // State sub-documents (device controls, call status, etc.)
+    match /agents/{agentId}/state/{stateDoc} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // Call sync logs
+    match /agents/{agentId}/call_sync/{callId} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // Contacts
+    match /agents/{agentId}/contacts/{contactId} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // Notifications
+    match /agents/{agentId}/notifications/{notifId} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // Tasks
+    match /agents/{agentId}/tasks/{taskId} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // Task logs
+    match /agents/{agentId}/task_logs/{logId} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // Push subscriptions
+    match /agents/{agentId}/push_subs/{subId} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // Call notes
+    match /agents/{agentId}/call_notes/{noteId} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // Catch-all for any other agent subcollections
+    match /agents/{agentId}/{collection}/{docId} {
+      allow read, write: if isAgentOrAdmin(agentId);
+    }
+
+    // ── App-wide config (admins write, agents read) ─────────────────────────
+
+    match /config/{configDoc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+  }
+}

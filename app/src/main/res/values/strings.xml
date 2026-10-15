@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Dialing Assistant</string>
+    <string name="accessibility_service_description">Allows Dialing Assistant to toggle WiFi and Bluetooth directly from the web interface without opening Settings.</string>
+</resources>

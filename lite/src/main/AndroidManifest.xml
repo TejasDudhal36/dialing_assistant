@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+
+    <!-- ── Calling ─────────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- Required on Android 14+ to run a foregroundServiceType="phoneCall" service -->
+    <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
+
+    <!-- ── SMS ─────────────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+    <!-- ── Infrastructure ──────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!-- Music apps the remote "play music" command can launch / resolve on Android 11+ -->
+    <queries>
+        <package android:name="com.google.android.apps.youtube.music" />
+        <package android:name="com.spotify.music" />
+        <package android:name="com.apple.android.music" />
+        <package android:name="deezer.android.app" />
+        <package android:name="com.soundcloud.android" />
+        <package android:name="com.tidal.music" />
+        <package android:name="com.amazon.mp3" />
+    </queries>
+
+    <application
+        android:name=".App"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AirDroidClone"
+        tools:targetApi="31">
+
+        <!-- ── Login (launcher) ─────────────────────────────── -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ── Main ─────────────────────────────────────────── -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" />
+
+        <!-- ── Call trigger (transparent overlay) ───────────── -->
+        <activity
+            android:name=".CallTriggerActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- ── SMS receive ───────────────────────────────────── -->
+        <receiver
+            android:name=".SmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ── Phone state ───────────────────────────────────── -->
+        <receiver
+            android:name=".CallReceiver"
+            android:exported="true"
+            android:permission="android.permission.READ_PHONE_STATE">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ── Outgoing call number capture ──────────────────── -->
+        <receiver
+            android:name=".OutgoingCallReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ── Foreground service ────────────────────────────── -->
+        <service
+            android:name=".CallBackgroundService"
+            android:foregroundServiceType="phoneCall" />
+
+        <!-- ── FCM wake service ──────────────────────────────── -->
+        <!-- Receives high-priority data messages from the web app / chrome-extension on
+             dial, waking the app from Doze so the RTDB dial command is read promptly. -->
+        <service
+            android:name=".FcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- ── Call-routing merge (accessibility) ────────────────── -->
+        <!-- Taps the system in-call "Merge" button once a routed second call
+             connects — the one call operation a non-default-dialer app cannot do
+             through TelecomManager. Enable in:
+             Settings → Accessibility → Dialing Assistant Merge. -->
+        <service
+            android:name=".MergeCallAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/merge_accessibility_config" />
+        </service>
+
+        <!-- ── Notification listener ─────────────────────────────── -->
+        <!-- Not used to mirror notifications; required so MediaSessionManager can read
+             active media sessions for remote music control. Grant in:
+             Settings → Apps → Special app access → Notification access. -->
+        <service
+            android:name=".NotificationListener"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- ── Restart service after boot / update ───────────── -->
+        <receiver
+            android:name=".BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

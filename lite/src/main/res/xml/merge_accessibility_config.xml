@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Config for MergeCallAccessibilityService: watches the in-call screen so the
+     call-routing feature can tap "Merge" once the routed party answers. Not scoped to
+     specific packages because the dialer/in-call package name varies by OEM. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowContentChanged|typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagRetrieveInteractiveWindows"
+    android:canRetrieveWindowContent="true"
+    android:canPerformGestures="true"
+    android:description="@string/merge_accessibility_description"
+    android:notificationTimeout="100" />
